@@ -1,0 +1,14 @@
+{
+    "all": "advisory",
+    "check-required-tags": {
+        "requiredTags": [
+            "application",
+            "backup-by",
+            "cost-center",
+            "delete-after",
+            "environment",
+            "product",
+            "product-area"
+        ]
+    }
+}
