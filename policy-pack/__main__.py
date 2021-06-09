@@ -13,19 +13,19 @@ def check_for_tags_validator(args: ResourceValidationArgs, report_violation: Rep
     if is_taggable(args.resource_type):
         ts = args.props['tags']
         for rt in requiredTags:
-            if not ts or not ts[rt]:
+            if rt not in ts:
                 report_violation(
-                    "Taggable resource '${args.urn}' is missing required tag '${rt}'")
+                    f"Taggable resource '{args.urn}' is missing required tag '{rt}'")
 
 check_for_tags = ResourceValidationPolicy(
     name="check-required-tags",
     description="Looks for specified tags on each resource.",
+    enforcement_level=EnforcementLevel.ADVISORY,
     validate=check_for_tags_validator,
 )
 
 PolicyPack(
     name="tagging-policy",
-    enforcement_level=EnforcementLevel.ADVISORY,
     policies=[
         check_for_tags,
     ],
