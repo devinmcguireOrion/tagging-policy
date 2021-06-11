@@ -7,7 +7,13 @@ config = pulumi.Config()
 register_auto_tags({
     'user:Project': pulumi.get_project(),
     'user:Stack': pulumi.get_stack(),
-    #'user:Cost Center': config.require('costCenter'),
+    'application': 'test',
+    'cost-center': 390,
+    'environment': pulumi.get_stack(),
+    'product': 'policy',
+    'product-area': 'devsecops',
+    'backup-by': 'N/A',
+    'delete-after': 'N/A',
 })
 
 # Create a bunch of AWS resources -- with auto-tags!
