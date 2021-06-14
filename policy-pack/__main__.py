@@ -11,17 +11,17 @@ import datetime
 requiredTags = ["application", "cost-center", "delete-after", "environment", "product", "product-area"]
 tagDerivatives = {
     'application' : ['app'], 
-    'environment' : ['env']
+    'environment' : ['env'],
+    #'product' : ['proj'],
 }
 timeTags = ["backup-by"] #Only for EC2/EBS
 environmentValues = ["sandbox", "dev", "test", "staging", "alpha", "alpha2", "prod"]
-
 
 def has_tags_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
     if is_taggable(args.resource_type):
         if 'tags' not in args.props:
             report_violation(
-                f"Resource does not have any tags")
+                f"Resource '{args.urn}' does not have any tags")
 
 def check_for_required_tags_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
     if is_taggable(args.resource_type):
@@ -39,26 +39,29 @@ def check_for_required_tags_validator(args: ResourceValidationArgs, report_viola
                         for lowerTag in lowerTags:
                             for deriv in tagDerivatives[rt]:
                                 if deriv in lowerTag:
-                                    #use the lower case index to return the proper capitalization of the false tag
+                                    # use the lower case index to return the proper capitalization of the false tag
                                     tag = tags[lowerTags.index(lowerTag)]
                                     derivFound = True
                                     report_violation(
-                                        f"Please use tag name '{rt}' instead of '{tag}'")
+                                        f"Please use tag name '{rt}' instead of '{tag}' on resource '{args.urn}'")
                         if not derivFound:
                             report_violation(
-                                f"Resource is missing required tag '{rt}'")
+                                f"Resource '{args.urn}' is missing required tag '{rt}'")
                     else:
+                        # missing tag has no derivatives
                         report_violation(
-                            f"Resource is missing required tag '{rt}'")
-
-def check_for_environment_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
-    if is_taggable(args.resource_type):
-        if 'tags' in args.props:
-            tags = args.props['tags']
-            if "environment" in tags:
-                if tags["environment"] not in environmentValues:
-                    report_violation(
-                        f"'{tags['environment']}' is an invalid environment value. Proper values include {environmentValues}")
+                            f"Resource '{args.urn}' is missing required tag '{rt}'")
+                elif rt in tagDerivatives:
+                    # look for tags with different names that probably represent the same thing
+                    derivFound = False
+                    for lowerTag in lowerTags:
+                        for deriv in tagDerivatives[rt]:
+                            if deriv in lowerTag:
+                                tag = tags[lowerTags.index(lowerTag)]
+                                derivFound = True
+                                if tag not in requiredTags:
+                                    report_violation(
+                                            f"Tag '{tag}' is redundant. Please just use '{rt}' on resource '{args.urn}'")
 
 def check_for_time_tags_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
     if is_taggable(args.resource_type):
@@ -68,8 +71,34 @@ def check_for_time_tags_validator(args: ResourceValidationArgs, report_violation
                 for rt in timeTags:
                     if rt not in tags:
                         report_violation(
-                            f"Resource is missing required tag '{rt}'")
+                            f"Resource '{args.urn}' is missing required tag '{rt}'")
 
+def check_backup_value_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
+    if is_taggable(args.resource_type):
+        if 'tags' in args.props:
+            tags = args.props['tags']
+            if "backup-by" in tags:
+                if type(tags["backup-by"]) != datetime:
+                    report_violation(
+                        f"'{tags['backup-by']}' is an invalid backup-by value on resource '{args.urn}'. Proper value must be a datetime in YYYY/MM/DD format")
+
+def check_delete_value_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
+    if is_taggable(args.resource_type):
+        if 'tags' in args.props:
+            tags = args.props['tags']
+            if "delete-after" in tags:
+                if type(tags["delete-after"]) != datetime or tags["delete-after"] != "Never":
+                    report_violation(
+                        f"'{tags['delete-after']}' is an invalid delete-after value on resource '{args.urn}'. Proper value must be a datetime in YYYY/MM/DD format or a string with the value 'Never'")
+
+def check_environment_value_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
+    if is_taggable(args.resource_type):
+        if 'tags' in args.props:
+            tags = args.props['tags']
+            if "environment" in tags:
+                if tags["environment"] not in environmentValues:
+                    report_violation(
+                        f"'{tags['environment']}' is an invalid environment value on resource '{args.urn}'. Proper values include {environmentValues}")
 
 check_for_tags = ResourceValidationPolicy(
     name="check-for-tags",
@@ -79,7 +108,9 @@ check_for_tags = ResourceValidationPolicy(
         has_tags_validator, 
         check_for_required_tags_validator,
         check_for_time_tags_validator,
-        check_for_environment_validator,
+        #check_backup_value_validator,
+        #check_delete_value_validator,
+        check_environment_value_validator,
     ]
 )
 
