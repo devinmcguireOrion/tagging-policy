@@ -38,15 +38,13 @@ def check_for_required_tags_validator(args: ResourceValidationArgs, report_viola
                 elif type(args.props['tags']) == pulumi_policy.proxy._ListProxy:
                     tags = []
                     for i in args.props['tags']:
-                        if hasattr(i, '__iter__'):
-                            tags.append(iter(i).__next__())
-                        else:
-                            tags.append(i)
+                        if type(i) == pulumi_policy.proxy._DictProxy and 'key' in i:
+                            tags.append(i['key'])
+                            report_violation(f"{i['key']}")
                 else:
                     report_violation(
                         f"Tags are of type '{type(args.props['tags'])}' on resource '{args.urn}' and were not checked.")
                     return
-                tags = list(args.props['tags'].keys())
                 # create a lower case copy to ignore capitalization
                 lowerTags = [x.lower() for x in tags]
                 # check if a proper tag is missing before looking for derivatives
