@@ -10,18 +10,13 @@ class MyStack : Stack
         // Create an AWS resource (S3 Bucket)
         var bucket = new Bucket("my-bucket", new BucketArgs {
                 Tags = {
-                    { "data-center", Output.Create(Aws.GetRegion.InvokeAsync()) },
+                    { "data-center", Output.Create(Aws.GetRegion.InvokeAsync().Result.Name) },
                 },});
 
         // Export the name of the bucket
         this.BucketName = bucket.Id;
     }
 
-    public static class GetRegion {
-        public static Task<Aws.GetRegionResult> InvokeAsync(Aws.GetRegionArgs args, InvokeOptions? opts = null){
-
-        }
-    }
 
     [Output]
     public Output<string> BucketName { get; set; }

@@ -9,7 +9,7 @@ import pulumi_policy
 from taggable import is_taggable
 import datetime
 
-requiredTags = ["application", "cost-center", "delete-after", "environment", "product", "product-area"]
+requiredTags = ["application", "cost-center", "data-center", "delete-after", "environment", "product", "product-area"]
 tagDerivatives = {
     'application' : ['app'], 
     'environment' : ['env'],
@@ -40,7 +40,6 @@ def check_for_required_tags_validator(args: ResourceValidationArgs, report_viola
                     for i in args.props['tags']:
                         if type(i) == pulumi_policy.proxy._DictProxy and 'key' in i:
                             tags.append(i['key'])
-                            report_violation(f"{i['key']}")
                 else:
                     report_violation(
                         f"Tags are of type '{type(args.props['tags'])}' on resource '{args.urn}' and were not checked.")
