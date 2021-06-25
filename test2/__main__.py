@@ -10,7 +10,7 @@ register_auto_tags({
     'user:Stack': pulumi.get_stack(),
     'application': 'test',
     'cost-center': 390,
-    'data-center': aws.get_region().name,
+    #'data-center': aws.get_region().name,
     'environment': pulumi.get_stack(),
     'product': 'policy',
     'product-area': 'devsecops',

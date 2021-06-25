@@ -9,7 +9,7 @@ import pulumi_policy
 from taggable import is_taggable
 import datetime
 
-requiredTags = ["application", "cost-center", "data-center", "delete-after", "environment", "product", "product-area"]
+requiredTags = ["application", "cost-center", "delete-after", "environment", "product", "product-area"]
 tagDerivatives = {
     'application' : ['app'], 
     'environment' : ['env'],
