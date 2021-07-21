@@ -16,7 +16,7 @@ tagDerivatives = {
     #'product' : ['proj'],
 }
 timeTags = ["backup-by"] #Only for EC2/EBS
-environmentValues = ["sandbox", "dev", "test", "staging", "alpha", "alpha2", "prod"]
+environmentValues = ["sandbox", "dev", "test", "staging", "alpha", "alpha2", "uat", "prod"]
 
 def has_tags_validator(args: ResourceValidationArgs, report_violation: ReportViolation):
     try:
